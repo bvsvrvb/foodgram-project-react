@@ -10,10 +10,6 @@ class Ingredient(models.Model):
         blank=False,
         db_index=True
         )
-    # quantity = models.PositiveSmallIntegerField(
-    #     'Количество',
-    #     blank=False
-    #     )
     measurement_unit = models.CharField(
         'Единицы измерения',
         max_length=50,
@@ -69,7 +65,7 @@ class Recipe(models.Model):
         db_index=True
         )
     image = models.ImageField('Изображение', upload_to='recipes/', blank=False)
-    description = models.TextField('Описание', blank=False)
+    text = models.TextField('Описание', blank=False)
     ingredients = models.ManyToManyField(
         Ingredient,
         blank=False,
@@ -111,7 +107,7 @@ class RecipeIngredients(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, null=True)
     ingredients = models.ForeignKey(
         Ingredient, on_delete=models.SET_NULL, null=True)
-    quantity = models.PositiveSmallIntegerField(
+    amount = models.PositiveSmallIntegerField(
         'Количество',
         blank=False,
         default=0
