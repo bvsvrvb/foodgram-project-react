@@ -137,3 +137,23 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f'{self.user} {self.recipe}'
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='cart',
+    )
+    recipes = models.ManyToManyField(
+        Recipe,
+        verbose_name='Рецепты',
+        blank=True
+        )
+
+    class Meta:
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Список покупок'
+
+    def __str__(self) -> str:
+        return f'{self.user} {self.recipes}'
