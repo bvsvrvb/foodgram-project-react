@@ -69,12 +69,14 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         blank=False,
-        verbose_name='Ингредиенты'
+        verbose_name='Ингредиенты',
+        related_name='recipes'
         )  # choises
     tags = models.ManyToManyField(
         Tag,
         blank=False,
-        verbose_name='Теги'
+        verbose_name='Теги',
+        related_name='recipes'
         )  # choises
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
@@ -115,3 +117,19 @@ class RecipeIngredients(models.Model):
 
     def __str__(self):
         return f'{self.recipe} {self.ingredients}'
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorites'
+        )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorited'
+        )
+
+    def __str__(self):
+        return f'{self.user} {self.recipe}'
