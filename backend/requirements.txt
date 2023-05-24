@@ -3,4 +3,5 @@ pytz==2023.3
 sqlparse==0.4.4
 requests==2.26.0
 djangorestframework==3.12.4
-pillow-9.5.0
+pillow==9.5.0
+djoser==2.1.0
