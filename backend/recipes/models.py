@@ -70,15 +70,13 @@ class Recipe(models.Model):
         Ingredient,
         blank=False,
         verbose_name='Ингредиенты',
-        related_name='recipes',
-        through='RecipeIngredient'
+        related_name='recipes'
         )  # choises
     tags = models.ManyToManyField(
         Tag,
         blank=False,
         verbose_name='Теги',
-        related_name='recipes',
-        through='RecipeTag'
+        related_name='recipes'
         )  # choises
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
@@ -99,18 +97,18 @@ class Recipe(models.Model):
         return self.name
 
 
-class RecipeTag(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True)
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, null=True)
+class RecipeTags(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, null=True)
+    tags = models.ForeignKey(Tag, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f'{self.recipe} {self.tag}'
+        return f'{self.recipe} {self.tags}'
 
 
-class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True)
-    ingredient = models.ForeignKey(
-        Ingredient, on_delete=models.CASCADE, null=True)
+class RecipeIngredients(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, null=True)
+    ingredients = models.ForeignKey(
+        Ingredient, on_delete=models.SET_NULL, null=True)
     amount = models.PositiveSmallIntegerField(
         'Количество',
         blank=False,
@@ -118,7 +116,7 @@ class RecipeIngredient(models.Model):
         )
 
     def __str__(self):
-        return f'{self.recipe} {self.ingredient}'
+        return f'{self.recipe} {self.ingredients}'
 
 
 class Favorite(models.Model):
@@ -150,8 +148,7 @@ class Cart(models.Model):
     recipes = models.ManyToManyField(
         Recipe,
         verbose_name='Рецепты',
-        blank=True,
-        through='CartRecipe'
+        blank=True
         )
 
     class Meta:
@@ -160,11 +157,3 @@ class Cart(models.Model):
 
     def __str__(self) -> str:
         return f'{self.user} {self.recipes}'
-
-
-class CartRecipe(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, null=True)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True)
-
-    def __str__(self):
-        return f'{self.cart} {self.recipe}'
