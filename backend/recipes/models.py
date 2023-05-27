@@ -1,6 +1,24 @@
+from typing import Optional
+
 from django.db import models
 
 from users.models import User
+
+
+class RecipeQuerySet(models.QuerySet):
+    def add_user_annotations(self, user_id: Optional[int]):
+        return self.annotate(
+            in_shopping_cart=models.Exists(
+                Cart.objects.filter(
+                    user_id=user_id, recipe__pk=models.OuterRef('pk')
+                )
+            ),
+            favorited=models.Exists(
+                Favorite.objects.filter(
+                    user_id=user_id, recipe__pk=models.OuterRef('pk')
+                )
+            )
+        )
 
 
 class Ingredient(models.Model):
@@ -50,6 +68,7 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
+    objects = RecipeQuerySet.as_manager()
     author = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -70,18 +89,20 @@ class Recipe(models.Model):
         Ingredient,
         blank=False,
         verbose_name='Ингредиенты',
-        related_name='recipes'
-        )  # choises
+        related_name='recipes',
+        through='RecipeIngredient'
+        )
     tags = models.ManyToManyField(
         Tag,
         blank=False,
         verbose_name='Теги',
-        related_name='recipes'
-        )  # choises
+        related_name='recipes',
+        through='RecipeTag'
+        )
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
         blank=False
-        )  # validators=[validate_cooking_time] - время в минутах?
+        )
 
     class Meta:
         verbose_name = 'Рецепт'
@@ -97,18 +118,18 @@ class Recipe(models.Model):
         return self.name
 
 
-class RecipeTags(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, null=True)
-    tags = models.ForeignKey(Tag, on_delete=models.SET_NULL, null=True)
+class RecipeTag(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return f'{self.recipe} {self.tags}'
+        return f'{self.recipe} {self.tag}'
 
 
-class RecipeIngredients(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.SET_NULL, null=True)
-    ingredients = models.ForeignKey(
-        Ingredient, on_delete=models.SET_NULL, null=True)
+class RecipeIngredient(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True)
+    ingredient = models.ForeignKey(
+        Ingredient, on_delete=models.CASCADE, null=True)
     amount = models.PositiveSmallIntegerField(
         'Количество',
         blank=False,
@@ -116,7 +137,7 @@ class RecipeIngredients(models.Model):
         )
 
     def __str__(self):
-        return f'{self.recipe} {self.ingredients}'
+        return f'{self.recipe} {self.ingredient}'
 
 
 class Favorite(models.Model):
@@ -148,7 +169,8 @@ class Cart(models.Model):
     recipes = models.ManyToManyField(
         Recipe,
         verbose_name='Рецепты',
-        blank=True
+        blank=True,
+        through='CartRecipe'
         )
 
     class Meta:
@@ -157,3 +179,11 @@ class Cart(models.Model):
 
     def __str__(self) -> str:
         return f'{self.user} {self.recipes}'
+
+
+class CartRecipe(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, null=True)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return f'{self.cart} {self.recipe}'
