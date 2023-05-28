@@ -6,17 +6,20 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.http import Http404
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .pagination import CustomPageNumberPagination
-from . import serializers
+from . import serializers, filters
 from users.models import User, Follow
-from recipes.models import Tag
+from recipes.models import Tag, Recipe, Ingredient
 
-ALLOWED_METHODS = ('get', 'post', 'delete')
+ALLOWED_USER_METHODS = ('get', 'post', 'delete')
+ALLOWED_METHODS = ('get', 'post', 'patch', 'delete',
+                   'head', 'options', 'trace')
 
 
 class CustomUserViewSet(UserViewSet):
-    http_method_names = ALLOWED_METHODS
+    http_method_names = ALLOWED_USER_METHODS
     pagination_class = CustomPageNumberPagination
 
     @action(methods=['get'], detail=False)
@@ -65,8 +68,23 @@ class CustomUserViewSet(UserViewSet):
             )
 
 
-class TagViewSet(mixins.ListModelMixin,
-                 mixins.RetrieveModelMixin,
-                 viewsets.GenericViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
+
+
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = serializers.IngredientSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = filters.IngredientFilter
+
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    http_method_names = ALLOWED_METHODS
+    queryset = Recipe.objects.all()
+    serializer_class = serializers.RecipeSerializer
+    pagination_class = CustomPageNumberPagination
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)

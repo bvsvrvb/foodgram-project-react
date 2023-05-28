@@ -6,7 +6,7 @@ from rest_framework.serializers import (
 from djoser.serializers import UserSerializer
 
 from users.models import User, Follow
-from recipes.models import Recipe, Tag
+from recipes.models import Recipe, Tag, Ingredient
 from .pagination import DEFAULT_PAGE_SIZE
 
 
@@ -98,3 +98,30 @@ class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
+
+
+class IngredientSerializer(ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
+
+
+class RecipeSerializer(ModelSerializer):
+    tags = TagSerializer(read_only=True, many=True)
+    author = CustomUserSerializer(read_only=True)
+    # ingredients = IngredientSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            # 'is_favorited',
+            # 'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time'
+        )

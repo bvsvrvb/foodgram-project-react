@@ -5,3 +5,4 @@ requests==2.26.0
 djangorestframework==3.12.4
 pillow==9.5.0
 djoser==2.1.0
+django-filter==23.2
