@@ -1,17 +1,13 @@
-from rest_framework.serializers import (
-    ModelSerializer,
-    SerializerMethodField,
-    UniqueTogetherValidator,
-    ValidationError)
+from rest_framework import serializers
 from djoser.serializers import UserSerializer
 
 from users.models import User, Follow
-from recipes.models import Recipe, Tag, Ingredient
+from recipes.models import Recipe, Tag, Ingredient, RecipeIngredient
 from .pagination import DEFAULT_PAGE_SIZE
 
 
 class CustomUserSerializer(UserSerializer):
-    is_subscribed = SerializerMethodField(read_only=True)
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -32,15 +28,15 @@ class CustomUserSerializer(UserSerializer):
             user=request.user, following=obj.id).exists()
 
 
-class SubRecipeSerializer(ModelSerializer):
+class SubRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class SubscriptionSerializer(CustomUserSerializer):
-    recipes = SerializerMethodField()
-    recipes_count = SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -66,13 +62,13 @@ class SubscriptionSerializer(CustomUserSerializer):
         return obj.recipes.all().count()
 
 
-class FollowSerializer(ModelSerializer):
+class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
         fields = ('user', 'following')
         validators = (
-            UniqueTogetherValidator(
+            serializers.UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
                 fields=('user', 'following'),
                 message=('Подписка уже оформлена')
@@ -81,7 +77,8 @@ class FollowSerializer(ModelSerializer):
 
     def validate(self, data):
         if data.get('user') == data.get('following'):
-            raise ValidationError({'errors': 'Нельзя подписаться на себя'})
+            raise serializers.ValidationError(
+                {'errors': 'Нельзя подписаться на себя'})
         return data
 
     def create(self, validated_data):
@@ -94,22 +91,34 @@ class FollowSerializer(ModelSerializer):
         ).data
 
 
-class TagSerializer(ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
 
 
-class IngredientSerializer(ModelSerializer):
+class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
 
-class RecipeSerializer(ModelSerializer):
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit')
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
+class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(read_only=True, many=True)
     author = CustomUserSerializer(read_only=True)
-    # ingredients = IngredientSerializer(read_only=True, many=True)
+    ingredients = RecipeIngredientSerializer(
+        read_only=True, many=True, source='recipe_ingredients')
 
     class Meta:
         model = Recipe
