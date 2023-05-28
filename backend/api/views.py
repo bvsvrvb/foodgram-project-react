@@ -2,14 +2,14 @@ from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.serializers import ValidationError
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .pagination import CustomPageNumberPagination
-from . import serializers, filters
+from . import serializers, filters, permissions
 from users.models import User, Follow
 from recipes.models import Tag, Recipe, Ingredient
 
@@ -85,6 +85,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = serializers.RecipeSerializer
     pagination_class = CustomPageNumberPagination
+    permission_classes = (permissions.AuthorOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = filters.RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return serializers.RecipeSerializer
+        return serializers.CreateRecipeSerializer

@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from djoser.serializers import UserSerializer
+from drf_extra_fields.fields import Base64ImageField
 
 from users.models import User, Follow
-from recipes.models import Recipe, Tag, Ingredient, RecipeIngredient
+from recipes.models import Recipe, Tag, Ingredient, RecipeIngredient, RecipeTag
 from .pagination import DEFAULT_PAGE_SIZE
 
 
@@ -104,7 +105,8 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='ingredient.id')
+    # id = serializers.ReadOnlyField(source='ingredient.id')
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit')
@@ -134,3 +136,52 @@ class RecipeSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time'
         )
+
+
+class CreateRecipeSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(), many=True)
+    ingredients = RecipeIngredientSerializer(many=True)
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'tags',
+            'ingredients',
+            'name',
+            'image',
+            'text',
+            'cooking_time'
+        )
+
+    def to_representation(self, instance):
+        return RecipeSerializer(
+            instance=instance,
+            context={'request': self.context.get('request')}
+        ).data
+
+    def add_tags_ingredients(self, ingredients, tags, model):
+        for ingredient in ingredients:
+            RecipeIngredient.objects.update_or_create(
+                recipe=model,
+                ingredient=ingredient['id'],
+                amount=ingredient['amount']
+                )
+        for tag in tags:
+            RecipeTag.objects.update_or_create(recipe=model, tag=tag)
+
+    def create(self, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = super().create(validated_data)
+        self.add_tags_ingredients(ingredients, tags, recipe)
+        return recipe
+
+    def update(self, instance, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        instance.ingredients.clear()
+        instance.tags.clear()
+        self.add_tags_ingredients(ingredients, tags, instance)
+        return super().update(instance, validated_data)

@@ -8,4 +8,11 @@ class IngredientFilter(django_filters.FilterSet):
 
     class Meta:
         model = Ingredient
-        fields = ['name']
+        fields = ('name',)
+
+
+class RecipeFilter(django_filters.FilterSet):
+
+    class Meta:
+        model = Recipe
+        fields = ('author', 'tags')
