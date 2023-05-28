@@ -6,7 +6,7 @@ from rest_framework.serializers import (
 from djoser.serializers import UserSerializer
 
 from users.models import User, Follow
-from recipes.models import Recipe
+from recipes.models import Recipe, Tag
 from .pagination import DEFAULT_PAGE_SIZE
 
 
@@ -92,3 +92,9 @@ class FollowSerializer(ModelSerializer):
             instance=instance.following,
             context={'request': self.context.get('request')}
         ).data
+
+
+class TagSerializer(ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ('id', 'name', 'color', 'slug')

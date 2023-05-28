@@ -1,5 +1,5 @@
 from djoser.views import UserViewSet
-from rest_framework import status
+from rest_framework import status, mixins, viewsets
 from rest_framework.serializers import ValidationError
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -8,8 +8,9 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 
 from .pagination import CustomPageNumberPagination
-from .serializers import SubscriptionSerializer, FollowSerializer
+from . import serializers
 from users.models import User, Follow
+from recipes.models import Tag
 
 ALLOWED_METHODS = ('get', 'post', 'delete')
 
@@ -31,7 +32,7 @@ class CustomUserViewSet(UserViewSet):
     def subscriptions(self, request, *args, **kwargs):
         queryset = User.objects.filter(following__user=request.user)
         page = self.paginate_queryset(queryset)
-        serializer = SubscriptionSerializer(
+        serializer = serializers.SubscriptionSerializer(
             page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
@@ -43,7 +44,7 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscribe(self, request, *args, **kwargs):
         followed_user = get_object_or_404(User, pk=self.kwargs.get('id'))
-        serializer = FollowSerializer(
+        serializer = serializers.FollowSerializer(
             data={'user': request.user.id, 'following': followed_user.id},
             context={'request': request}
             )
@@ -62,3 +63,10 @@ class CustomUserViewSet(UserViewSet):
                 f'Вы отписались от {followed_user}',
                 status=status.HTTP_204_NO_CONTENT
             )
+
+
+class TagViewSet(mixins.ListModelMixin,
+                 mixins.RetrieveModelMixin,
+                 viewsets.GenericViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = serializers.TagSerializer
