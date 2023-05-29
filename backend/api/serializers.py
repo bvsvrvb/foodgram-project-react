@@ -105,8 +105,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
-    # id = serializers.ReadOnlyField(source='ingredient.id')
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit')
@@ -138,11 +137,19 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
 
+class CreateRecipeIngredientSerializer(RecipeIngredientSerializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
 class CreateRecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True)
-    ingredients = RecipeIngredientSerializer(many=True)
+    ingredients = CreateRecipeIngredientSerializer(many=True)
 
     class Meta:
         model = Recipe
