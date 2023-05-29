@@ -11,7 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .pagination import CustomPageNumberPagination
 from . import serializers, filters, permissions
 from users.models import User, Follow
-from recipes.models import Tag, Recipe, Ingredient
+from recipes.models import Tag, Recipe, Ingredient, Favorite
 
 ALLOWED_USER_METHODS = ('get', 'post', 'delete')
 ALLOWED_METHODS = ('get', 'post', 'patch', 'delete',
@@ -96,3 +96,30 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.request.method in SAFE_METHODS:
             return serializers.RecipeSerializer
         return serializers.CreateRecipeSerializer
+
+    @action(
+        methods=['post', 'delete'],
+        detail=True,
+        permission_classes=[IsAuthenticated]
+    )
+    def favorite(self, request, *args, **kwargs):
+        recipe = get_object_or_404(Recipe, id=self.kwargs.get('pk'))
+        serializer = serializers.FavoriteSerializer(
+            data={'user': request.user.id, 'recipe': recipe.id},
+            context={'request': request}
+            )
+        if request.method == 'POST':
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'DELETE':
+            try:
+                favorite = get_object_or_404(
+                    Favorite, user=request.user, recipe=recipe)
+            except Http404:
+                raise ValidationError({'errors': 'Рецепта нет в избранном'})
+            favorite.delete()
+            return Response(
+                'Рецепт удален из избранного',
+                status=status.HTTP_204_NO_CONTENT
+            )
