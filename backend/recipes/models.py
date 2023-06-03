@@ -13,7 +13,7 @@ class RecipeQuerySet(models.QuerySet):
                     user_id=user_id, recipe__pk=models.OuterRef('pk')
                 )
             ),
-            favorited=models.Exists(
+            in_favorite=models.Exists(
                 Favorite.objects.filter(
                     user_id=user_id, recipe__pk=models.OuterRef('pk')
                 )
