@@ -4,7 +4,7 @@ from drf_extra_fields.fields import Base64ImageField
 
 from users.models import User, Follow
 from recipes.models import (Recipe, Tag, Ingredient, RecipeIngredient,
-                            RecipeTag, Favorite)
+                            RecipeTag, Favorite, Cart)
 from .pagination import DEFAULT_PAGE_SIZE
 
 
@@ -206,6 +206,18 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
+        fields = ('user', 'recipe')
+
+    def to_representation(self, instance):
+        return SubRecipeSerializer(
+            instance=instance.recipe,
+            context={'request': self.context.get('request')}
+        ).data
+
+
+class CartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cart
         fields = ('user', 'recipe')
 
     def to_representation(self, instance):
