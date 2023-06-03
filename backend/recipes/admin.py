@@ -23,7 +23,7 @@ class FavoriteAdmin(admin.ModelAdmin):
 
 
 class CartAdmin(admin.ModelAdmin):
-    list_display = ('user',)
+    list_display = ('user', 'recipe')
 
 
 admin.site.register(Recipe, RecipeAdmin)

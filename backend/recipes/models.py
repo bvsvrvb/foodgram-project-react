@@ -169,26 +169,13 @@ class Cart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='cart',
+        related_name='cart'
         )
-    recipes = models.ManyToManyField(
+    recipe = models.ForeignKey(
         Recipe,
-        verbose_name='Рецепты',
-        blank=True,
-        through='CartRecipe'
+        on_delete=models.CASCADE,
+        related_name='cart'
         )
-
-    class Meta:
-        verbose_name = 'Список покупок'
-        verbose_name_plural = 'Список покупок'
-
-    def __str__(self) -> str:
-        return f'{self.user} {self.recipes}'
-
-
-class CartRecipe(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, null=True)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return f'{self.cart} {self.recipe}'
+        return f'{self.user} {self.recipe}'
