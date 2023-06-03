@@ -19,8 +19,13 @@ class CustomUserSerializer(UserSerializer):
             'username',
             'first_name',
             'last_name',
-            'is_subscribed'
+            'is_subscribed',
+            'password'
         )
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'is_subscribed': {'read_only': True}
+        }
 
     def get_is_subscribed(self, obj):
         request = self.context.get("request")
@@ -28,6 +33,9 @@ class CustomUserSerializer(UserSerializer):
             return False
         return Follow.objects.filter(
             user=request.user, following=obj.id).exists()
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
 
 class SubRecipeSerializer(serializers.ModelSerializer):
