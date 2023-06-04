@@ -114,17 +114,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            try:
-                favorite = get_object_or_404(
-                    Favorite, user=request.user, recipe=recipe)
-            except Http404:
-                raise ValidationError({'errors': 'Рецепта нет в избранном'})
-            favorite.delete()
-            return Response(
-                'Рецепт удален из избранного',
-                status=status.HTTP_204_NO_CONTENT
-            )
+        try:
+            favorite = get_object_or_404(
+                Favorite, user=request.user, recipe=recipe)
+        except Http404:
+            raise ValidationError({'errors': 'Рецепта нет в избранном'})
+        favorite.delete()
+        return Response(
+            'Рецепт удален из избранного',
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     @action(
         methods=['post', 'delete'],
@@ -141,18 +140,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            try:
-                favorite = get_object_or_404(
-                    Cart, user=request.user, recipe=recipe)
-            except Http404:
-                raise ValidationError(
-                    {'errors': 'Рецепта нет в списке покупок'})
-            favorite.delete()
-            return Response(
-                'Рецепт удален из списка покупок',
-                status=status.HTTP_204_NO_CONTENT
-            )
+        try:
+            favorite = get_object_or_404(
+                Cart, user=request.user, recipe=recipe)
+        except Http404:
+            raise ValidationError(
+                {'errors': 'Рецепта нет в списке покупок'})
+        favorite.delete()
+        return Response(
+            'Рецепт удален из списка покупок',
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     @action(
         methods=['get'],
