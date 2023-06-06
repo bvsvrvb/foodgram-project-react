@@ -63,7 +63,9 @@ jobs:
         script: |
           cd infra/
           sudo docker-compose stop
-          sudo docker-compose rm backend --no-input
+          sudo docker-compose rm infra_backend_1
+          sudo docker image prune
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram-backend:v1
           rm ~/infra/.env
           touch ~/infra/.env
           echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> ~/infra/.env
@@ -72,9 +74,9 @@ jobs:
           echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> ~/infra/.env
           echo DB_HOST=${{ secrets.DB_HOST }} >> ~/infra/.env
           echo DB_PORT=${{ secrets.DB_PORT }} >> ~/infra/.env
-          sudo docker image prune
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram-backend:v1
           sudo docker-compose up -d --build
+          sudo docker-compose exec backend python manage.py migrate
+          sudo docker-compose exec backend python manage.py collectstatic --no-input
 
   send_message:
     runs-on: ubuntu-latest
