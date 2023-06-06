@@ -1,6 +1,5 @@
 import django_filters
 from django_filters import filters
-
 from recipes.models import Ingredient, Recipe, Tag
 
 
