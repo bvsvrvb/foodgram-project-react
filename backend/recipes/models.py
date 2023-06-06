@@ -27,12 +27,12 @@ class Ingredient(models.Model):
         max_length=150,
         blank=False,
         db_index=True
-        )
+    )
     measurement_unit = models.CharField(
         'Единицы измерения',
         max_length=150,
         blank=False
-        )
+    )
 
     class Meta:
         verbose_name = 'Ингредиент'
@@ -49,14 +49,14 @@ class Tag(models.Model):
         blank=False,
         unique=True,
         db_index=True
-        )
+    )
     color = models.CharField(
         'Цвет',
         max_length=7,
         blank=False,
         unique=True,
         default="#ffffff"
-        )
+    )
     slug = models.SlugField(blank=False, unique=True)
 
     class Meta:
@@ -76,13 +76,13 @@ class Recipe(models.Model):
         blank=False,
         null=True,
         verbose_name='Автор'
-        )
+    )
     name = models.CharField(
         'Название',
         max_length=200,
         blank=False,
         db_index=True
-        )
+    )
     image = models.ImageField('Изображение', upload_to='recipes/', blank=False)
     text = models.TextField('Описание', blank=False)
     ingredients = models.ManyToManyField(
@@ -91,18 +91,18 @@ class Recipe(models.Model):
         verbose_name='Ингредиенты',
         related_name='recipes',
         through='RecipeIngredient'
-        )
+    )
     tags = models.ManyToManyField(
         Tag,
         blank=False,
         verbose_name='Теги',
         related_name='recipes',
         through='RecipeTag'
-        )
+    )
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
         blank=False
-        )
+    )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации', auto_now_add=True)
 
@@ -135,14 +135,14 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         null=True,
         related_name='recipe_ingredients'
-        )
+    )
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, null=True)
     amount = models.PositiveSmallIntegerField(
         'Количество',
         blank=False,
         default=0
-        )
+    )
 
     def __str__(self):
         return f'{self.recipe} {self.ingredient}'
@@ -153,12 +153,12 @@ class Favorite(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='favorites'
-        )
+    )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='favorited'
-        )
+    )
 
     class Meta:
         verbose_name = 'Избранное'
@@ -173,12 +173,12 @@ class Cart(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='cart'
-        )
+    )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='cart'
-        )
+    )
 
     class Meta:
         verbose_name = 'Список покупок'

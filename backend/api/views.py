@@ -1,19 +1,20 @@
+from django.db.models import Sum
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
-from rest_framework.serializers import ValidationError
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.http import Http404, HttpResponse
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Sum
+from rest_framework.serializers import ValidationError
 
+from recipes.models import (Cart, Favorite, Ingredient, Recipe,
+                            RecipeIngredient, Tag)
+from users.models import Follow, User
+
+from . import filters, permissions, serializers
 from .pagination import CustomPageNumberPagination
-from . import serializers, filters, permissions
-from users.models import User, Follow
-from recipes.models import (Tag, Recipe, Ingredient, Favorite, Cart,
-                            RecipeIngredient)
 
 ALLOWED_USER_METHODS = ('get', 'post', 'delete')
 ALLOWED_METHODS = ('get', 'post', 'patch', 'delete',
@@ -52,22 +53,21 @@ class CustomUserViewSet(UserViewSet):
         serializer = serializers.FollowSerializer(
             data={'user': request.user.id, 'following': followed_user.id},
             context={'request': request}
-            )
+        )
         if request.method == 'POST':
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE':
-            try:
-                subscription = get_object_or_404(
-                    Follow, user=request.user, following=followed_user)
-            except Http404:
-                raise ValidationError({'errors': 'Вы не подписаны'})
-            subscription.delete()
-            return Response(
-                f'Вы отписались от {followed_user}',
-                status=status.HTTP_204_NO_CONTENT
-            )
+        try:
+            subscription = get_object_or_404(
+                Follow, user=request.user, following=followed_user)
+        except Http404:
+            raise ValidationError({'errors': 'Вы не подписаны'})
+        subscription.delete()
+        return Response(
+            f'Вы отписались от {followed_user}',
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -109,7 +109,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer = serializers.FavoriteSerializer(
             data={'user': request.user.id, 'recipe': recipe.id},
             context={'request': request}
-            )
+        )
         if request.method == 'POST':
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -135,7 +135,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer = serializers.CartSerializer(
             data={'user': request.user.id, 'recipe': recipe.id},
             context={'request': request}
-            )
+        )
         if request.method == 'POST':
             serializer.is_valid(raise_exception=True)
             serializer.save()
