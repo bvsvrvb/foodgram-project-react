@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         file_path = os.path.join(
-            settings.BASE_DIR, '../data/', 'tags.csv')
+            settings.BASE_DIR, 'data/', 'tags.csv')
 
         Tag.objects.all().delete()
 
