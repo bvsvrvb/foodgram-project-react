@@ -24,13 +24,13 @@ class RecipeQuerySet(models.QuerySet):
 class Ingredient(models.Model):
     name = models.CharField(
         'Название',
-        max_length=50,
+        max_length=150,
         blank=False,
         db_index=True
         )
     measurement_unit = models.CharField(
         'Единицы измерения',
-        max_length=50,
+        max_length=150,
         blank=False
         )
 
@@ -45,7 +45,7 @@ class Ingredient(models.Model):
 class Tag(models.Model):
     name = models.CharField(
         'Название',
-        max_length=50,
+        max_length=150,
         blank=False,
         unique=True,
         db_index=True
@@ -79,7 +79,7 @@ class Recipe(models.Model):
         )
     name = models.CharField(
         'Название',
-        max_length=50,
+        max_length=200,
         blank=False,
         db_index=True
         )
@@ -103,10 +103,13 @@ class Recipe(models.Model):
         'Время приготовления',
         blank=False
         )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации', auto_now_add=True)
 
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+        ordering = ['-pub_date']
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'name'],
