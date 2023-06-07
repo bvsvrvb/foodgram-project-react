@@ -4,8 +4,12 @@ from .models import Cart, Favorite, Ingredient, Recipe, Tag
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author')
+    list_display = ('name', 'author', 'favorite_counter')
     list_filter = ('name', 'author', 'tags')
+
+    @admin.display(description='В избранном')
+    def favorite_counter(self, obj):
+        return obj.favorited.all().count()
 
 
 class TagAdmin(admin.ModelAdmin):
