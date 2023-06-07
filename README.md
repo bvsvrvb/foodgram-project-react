@@ -4,11 +4,17 @@ Foodgram - сайт, где пользователи могут публиков
 
 ## Workflow status
 
-Will be updated
+![Workflow status badge](https://github.com/bvsvrvb/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
 ## Ссылка на развёрнутый проект
 
-Will be updated
+http://51.250.76.39/
+
+### Данные для входа в админ-панель
+
+Логин: ```admin```
+
+Пароль: ```Adm1n000```
 
 ## Список Backend-технологи
 
@@ -18,10 +24,58 @@ Will be updated
 - Djoser
 - PostgreSQL
 - Gunicorn
-- nginx
+- Nginx
 - Docker
-- Docker Compose
+- Docker-compose
 
-## Запуск проекта
+## Локальный запуск проекта
 
-Will be updated
+Склонировать репозиторий:
+
+```
+git clone https://github.com/bvsvrvb/foodgram-project-react.git
+```
+
+В директории infra/ создать файл .env и добавить переменные окружения:
+
+```
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+DB_HOST=db
+DB_PORT=5432
+```
+
+Создать и запустить контейнеры Docker (находясь в infra/):
+
+```
+sudo docker-compose up
+```
+
+Выполнить миграции:
+
+```
+sudo docker-compose exec backend python manage.py migrate
+```
+
+Собрать статику:
+
+```
+sudo docker-compose exec backend python manage.py collectstatic --noinput
+```
+
+Создать суперпользователя:
+
+```
+sudo docker-compose exec backend python manage.py createsuperuser
+```
+
+Заполнить БД ингредиентами и тегами:
+
+```
+sudo docker-compose exec backend python manage.py load_data_ingredients
+```
+```
+sudo docker-compose exec backend python manage.py load_data_tags
+```
