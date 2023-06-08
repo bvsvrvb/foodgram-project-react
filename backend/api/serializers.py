@@ -226,7 +226,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def validate_name(self, data):
-        pattern = r'[a-zA-Z]'
+        pattern = r'[а-яА-ЯёЁa-zA-Z]'
         if not bool(re.search(pattern, data)):
             raise serializers.ValidationError(
                 'Название должно содержать буквы'
