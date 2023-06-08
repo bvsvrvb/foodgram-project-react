@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from recipes.models import (Cart, Favorite, Ingredient, Recipe,
@@ -171,6 +172,8 @@ class CreateRecipeIngredientSerializer(RecipeIngredientSerializer):
 
 
 class CreateRecipeSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(
+        max_length=200, blank=False, validators=[RegexValidator(r'^[a-zA-Z]')])
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True)
