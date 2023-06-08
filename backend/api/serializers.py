@@ -173,7 +173,10 @@ class CreateRecipeIngredientSerializer(RecipeIngredientSerializer):
 
 class CreateRecipeSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
-        max_length=200, blank=False, validators=[RegexValidator(r'^[a-zA-Z]')])
+        max_length=200,
+        blank=False,
+        validators=(RegexValidator(r'[a-zA-Z\s]'))
+    )
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True)
