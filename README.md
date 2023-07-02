@@ -26,7 +26,7 @@ Foodgram - сайт, где пользователи могут публиков
 git clone https://github.com/bvsvrvb/praktikum-foodgram.git
 ```
 ```bash
-cd infra
+cd praktikum-foodgram/infra
 ```
 
 Создать `.env` файл с переменными окружения:
